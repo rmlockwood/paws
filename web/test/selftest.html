@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>PAWS web self-test</title>
+	<style>body { font: 13px/1.4 system-ui, sans-serif; margin: 16px; } pre { white-space: pre-wrap; }</style>
+</head>
+<body>
+	<h1>PAWS web self-test</h1>
+	<p>Loads every page description through the DTD loader and the page mapper, and generates
+	the PC-PATR grammar from sample .paw files. Results are written below as JSON
+	(<code>compare_selftest.py</code> checks them against lxml/libxslt).</p>
+	<pre id="out">running…</pre>
+	<script type="module">
+		import { loadXml } from '../js/dtd.js';
+		import { transformToHtml, transformToText } from '../js/xslt.js';
+
+		const CONFIG = new URL('/resources/configuration/', location.href);
+		const result = { pages: {}, grammars: {}, errors: [] };
+		const params = { prmInstallPath: CONFIG.href, prmLocale: '_en', prmStylesheet: '' };
+
+		const names = await (await fetch(new URL('XmlPageDescriptions/', CONFIG))).json();
+		for (const name of names.filter(n => /_(en|es|fr)\.xml$/.test(n) && !n.startsWith('TechnicalTerms'))) {
+			try {
+				const doc = await loadXml(new URL('XmlPageDescriptions/' + name, CONFIG));
+				const els = doc.getElementsByTagName('*');
+				let attrs = 0;
+				for (const el of els) attrs += [...el.attributes].filter(a => !a.name.startsWith('xmlns')).length;
+				const html = await transformToHtml(new URL('Transforms/PAWSSKHtmlMapper.xsl', CONFIG), doc,
+					{ ...params, prmLocale: name.match(/(_\w\w)\.xml$/)[1] });
+				result.pages[name] = { elements: els.length, attributes: attrs, textLength: doc.documentElement.textContent.length, htmlLength: html.length };
+			} catch (e) {
+				result.errors.push(`${name}: ${e.message}`);
+			}
+		}
+		for (const paw of ['/resources/configuration/Data/PAWSStarterKitMaster.paw', '/testdata/TestData.paw']) {
+			try {
+				const doc = new DOMParser().parseFromString(await (await fetch(paw)).text(), 'application/xml');
+				result.grammars[paw] = await transformToText(new URL('Transforms/PAWSSKMasterGrammarMapper.xsl', CONFIG), doc);
+			} catch (e) {
+				result.errors.push(`${paw}: ${e.message}`);
+			}
+		}
+		document.getElementById('out').textContent = JSON.stringify(result);
+		document.title = 'done';
+	</script>
+</body>
+</html>

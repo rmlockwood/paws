@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>PAWS (web)</title>
+	<link rel="icon" href="/resources/images/PAWS128x128.png">
+	<style>
+		:root {
+			--bg: #f6f7f9;
+			--panel: #ffffff;
+			--border: #d8dce3;
+			--text: #1f2430;
+			--muted: #5b6475;
+			--accent: #2457a6;
+			--warn: #8a5a00;
+			--warn-bg: #fff4dc;
+			--error: #a4262c;
+			--error-bg: #fde7e9;
+		}
+		* { box-sizing: border-box; }
+		html, body { height: 100%; margin: 0; }
+		body {
+			display: grid;
+			grid-template-rows: auto 1fr auto;
+			font: 14px/1.4 "Segoe UI", system-ui, sans-serif;
+			color: var(--text);
+			background: var(--bg);
+		}
+		header {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 4px;
+			padding: 6px 10px;
+			background: var(--panel);
+			border-bottom: 1px solid var(--border);
+		}
+		header .brand { display: flex; align-items: center; gap: 8px; margin-right: 12px; font-weight: 600; }
+		header .brand img { width: 24px; height: 24px; }
+		header .brand small { font-weight: 400; color: var(--muted); }
+		.sep { width: 1px; height: 24px; background: var(--border); margin: 0 6px; }
+		button, select {
+			font: inherit;
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 4px 10px;
+			border: 1px solid transparent;
+			border-radius: 4px;
+			background: transparent;
+			color: var(--text);
+			cursor: pointer;
+		}
+		button:hover:not(:disabled) { background: #eef1f6; border-color: var(--border); }
+		button:disabled { opacity: .45; cursor: default; }
+		button img { width: 16px; height: 16px; }
+		button.primary { background: var(--accent); color: #fff; }
+		button.primary:hover:not(:disabled) { background: #1d4687; }
+		select { border-color: var(--border); }
+		.spacer { flex: 1; }
+		main { position: relative; min-height: 0; }
+		iframe { width: 100%; height: 100%; border: 0; background: #fff; display: block; }
+		#unsupported {
+			position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center;
+			background: var(--bg);
+		}
+		#unsupported[hidden] { display: none; }
+		footer {
+			display: flex;
+			gap: 16px;
+			align-items: center;
+			padding: 4px 10px;
+			border-top: 1px solid var(--border);
+			background: var(--panel);
+			color: var(--muted);
+			font-size: 13px;
+			white-space: nowrap;
+			overflow: hidden;
+		}
+		#file-name { color: var(--text); font-weight: 600; }
+		#dirty-flag { color: var(--warn); }
+		#page-title { overflow: hidden; text-overflow: ellipsis; }
+		#status-message { margin-left: auto; overflow: hidden; text-overflow: ellipsis; padding: 1px 8px; border-radius: 3px; }
+		#status-message[data-kind="warn"] { color: var(--warn); background: var(--warn-bg); }
+		#status-message[data-kind="error"] { color: var(--error); background: var(--error-bg); white-space: normal; }
+	</style>
+</head>
+<body>
+	<header>
+		<div class="brand">
+			<img src="/resources/images/PAWS128x128.png" alt="">
+			PAWS <small>web proof of concept</small>
+		</div>
+		<button id="btn-new" title="Start a new language"><img src="/resources/images/newAction.png" alt="">New</button>
+		<button id="btn-open" title="Open a .paw language file"><img src="/resources/images/openAction.png" alt="">Open…</button>
+		<button id="btn-save" title="Save the language file"><img src="/resources/images/saveAction.png" alt="">Save</button>
+		<button id="btn-save-as" title="Save the language file under a new name">Save as…</button>
+		<span class="sep"></span>
+		<button id="btn-back" title="Go back"><img src="/resources/images/back.png" alt="">Back</button>
+		<button id="btn-contents" title="Go to the contents page">Contents</button>
+		<span class="sep"></span>
+		<button id="btn-generate" class="primary" title="Write the PC-PATR grammar file (Shift+click to choose a different file)">Generate grammar</button>
+		<button id="reopen" hidden></button>
+		<span class="spacer"></span>
+		<label for="locale" style="color: var(--muted)">Interface</label>
+		<select id="locale">
+			<option value="_en">English</option>
+			<option value="_es">Español</option>
+			<option value="_fr">Français</option>
+		</select>
+	</header>
+	<main>
+		<iframe id="page" title="PAWS page"></iframe>
+		<div id="unsupported" hidden>
+			<div>
+				<h2>This browser can't write local files</h2>
+				<p>The PAWS web proof of concept uses the File System Access API. Please open it in Microsoft Edge or Google Chrome.</p>
+			</div>
+		</div>
+	</main>
+	<footer>
+		<span id="file-name">No language open</span>
+		<span id="dirty-flag" hidden>● unsaved changes</span>
+		<span id="page-title"></span>
+		<span id="status-message"></span>
+	</footer>
+	<script type="module" src="js/app.js"></script>
+</body>
+</html>
